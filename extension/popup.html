@@ -15,6 +15,28 @@
       margin: 0 0 16px 0;
       color: #333;
     }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      margin: 0;
+    }
+    .settings-icon {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+      width: auto;
+    }
+    .settings-icon:hover {
+      background: #f0f0f0;
+    }
     .status {
       padding: 12px;
       background: #f0f0f0;
@@ -90,7 +112,10 @@
   </style>
 </head>
 <body>
-  <h1>📚 NotebookLM Citation Mapper</h1>
+  <div class="header">
+    <h1>📚 NotebookLM Citation Mapper</h1>
+    <button class="settings-icon" id="settings-btn" title="Settings">⚙️</button>
+  </div>
   <div class="status">
     <div id="status-text">Connecting to NotebookLM...</div>
   </div>

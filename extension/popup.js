@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const copyBtn = document.getElementById('copy-btn');
   const copyChatBtn = document.getElementById('copy-chat-btn');
   const rescanBtn = document.getElementById('rescan-btn');
+  const settingsBtn = document.getElementById('settings-btn');
   const errorMessage = document.getElementById('error-message');
 
   let currentMappings = [];
@@ -199,4 +200,9 @@ document.addEventListener('DOMContentLoaded', function() {
       errorMessage.style.display = 'none';
     }, 5000);
   }
+
+  // Open settings page
+  settingsBtn.addEventListener('click', function() {
+    chrome.tabs.create({ url: 'settings.html' });
+  });
 });

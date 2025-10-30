@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>NotebookLM Citation Mapper - Settings</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-size: 28px;
+      color: #4285f4;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .back-btn {
+      background: #f0f0f0;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+
+    .back-btn:hover {
+      background: #e0e0e0;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .tab {
+      padding: 12px 24px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 15px;
+      border-radius: 6px;
+      transition: all 0.2s;
+      color: #666;
+    }
+
+    .tab:hover {
+      background: #f0f0f0;
+    }
+
+    .tab.active {
+      background: #4285f4;
+      color: white;
+    }
+
+    .tab-content {
+      display: none;
+      background: white;
+      padding: 32px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      min-height: 500px;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .section {
+      margin-bottom: 32px;
+    }
+
+    .section h2 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: #333;
+      border-bottom: 2px solid #4285f4;
+      padding-bottom: 8px;
+    }
+
+    .section p {
+      color: #666;
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #444;
+    }
+
+    .form-group input[type="text"],
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background: #4285f4;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #3367d6;
+    }
+
+    .btn-success {
+      background: #34a853;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #2d9247;
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
+    .btn-danger {
+      background: #ea4335;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #d33426;
+    }
+
+    .card {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+      margin-bottom: 16px;
+    }
+
+    .card h3 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: #4285f4;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #4285f4 0%, #3367d6 100%);
+      color: white;
+      padding: 24px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-card h3 {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-bottom: 8px;
+      color: white;
+    }
+
+    .stat-card .stat-value {
+      font-size: 36px;
+      font-weight: bold;
+    }
+
+    .history-item {
+      padding: 12px;
+      border-left: 3px solid #4285f4;
+      background: #f9f9f9;
+      margin-bottom: 12px;
+      border-radius: 4px;
+    }
+
+    .history-item .timestamp {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .history-item .preview {
+      font-size: 14px;
+      color: #333;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .theme-selector {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .theme-option {
+      padding: 16px 24px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .theme-option:hover {
+      border-color: #4285f4;
+    }
+
+    .theme-option.selected {
+      border-color: #4285f4;
+      background: #e8f0fe;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .alert-info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    .export-area {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .export-area textarea {
+      flex: 1;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>⚙️ Settings & Advanced Features</h1>
+      <button class="back-btn" id="back-btn">← Back to Popup</button>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="general">🎨 General</button>
+      <button class="tab" data-tab="format">📝 Format Options</button>
+      <button class="tab" data-tab="export">💾 Export/Import</button>
+      <button class="tab" data-tab="history">📜 History</button>
+      <button class="tab" data-tab="stats">📊 Statistics</button>
+      <button class="tab" data-tab="about">ℹ️ About</button>
+    </div>
+
+    <!-- General Tab -->
+    <div class="tab-content active" id="general">
+      <div class="section">
+        <h2>Theme Settings</h2>
+        <p>Choose your preferred theme for the extension interface</p>
+        <div class="theme-selector">
+          <div class="theme-option selected" data-theme="light">
+            <div style="font-size: 32px;">☀️</div>
+            <div>Light</div>
+          </div>
+          <div class="theme-option" data-theme="dark">
+            <div style="font-size: 32px;">🌙</div>
+            <div>Dark</div>
+          </div>
+          <div class="theme-option" data-theme="auto">
+            <div style="font-size: 32px;">🔄</div>
+            <div>Auto</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Auto-Features</h2>
+        <div class="form-group">
+          <div class="checkbox-group">
+            <input type="checkbox" id="auto-rescan" checked>
+            <label for="auto-rescan">Automatically rescan page when new content is detected</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="checkbox-group">
+            <input type="checkbox" id="auto-expand">
+            <label for="auto-expand">Auto-expand citation ellipses (...)</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="checkbox-group">
+            <input type="checkbox" id="show-notifications">
+            <label for="show-notifications">Show notifications on successful copy</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <button class="btn btn-primary" id="save-general">💾 Save Settings</button>
+      </div>
+    </div>
+
+    <!-- Format Options Tab -->
+    <div class="tab-content" id="format">
+      <div class="section">
+        <h2>Citation Format</h2>
+        <p>Customize how citations appear in the copied text</p>
+
+        <div class="form-group">
+          <label>Citation Style</label>
+          <select id="citation-style">
+            <option value="brackets">[N] - Brackets (default)</option>
+            <option value="parens">(N) - Parentheses</option>
+            <option value="superscript">^N - Superscript style</option>
+            <option value="footnote">N. - Footnote style</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Source List Header</label>
+          <input type="text" id="source-header" value="Sources:" placeholder="Sources:">
+        </div>
+
+        <div class="form-group">
+          <label>Source List Format</label>
+          <select id="source-format">
+            <option value="arrow">[N] → Filename</option>
+            <option value="colon">[N]: Filename</option>
+            <option value="dash">[N] - Filename</option>
+            <option value="numbered">N. Filename</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Separator Line</label>
+          <input type="text" id="separator" value="─────────────────────" placeholder="Custom separator">
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Preview</h2>
+        <div class="card">
+          <div id="format-preview" style="white-space: pre-wrap; font-family: monospace; font-size: 13px;"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <button class="btn btn-primary" id="save-format">💾 Save Format Settings</button>
+        <button class="btn btn-secondary" id="reset-format">🔄 Reset to Defaults</button>
+      </div>
+    </div>
+
+    <!-- Export/Import Tab -->
+    <div class="tab-content" id="export">
+      <div class="section">
+        <h2>Export Citation Mappings</h2>
+        <p>Export your current citation mappings to save or share them</p>
+        <div class="export-area">
+          <textarea id="export-data" readonly placeholder="Citation data will appear here..."></textarea>
+          <div class="btn-group" style="flex-direction: column;">
+            <button class="btn btn-primary" id="export-json">📥 Export as JSON</button>
+            <button class="btn btn-success" id="copy-export">📋 Copy to Clipboard</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Import Citation Mappings</h2>
+        <p>Import previously exported citation mappings</p>
+        <div class="form-group">
+          <textarea id="import-data" placeholder="Paste JSON data here..."></textarea>
+        </div>
+        <button class="btn btn-primary" id="import-json">📤 Import Data</button>
+      </div>
+
+      <div class="section">
+        <h2>Backup & Restore</h2>
+        <div class="btn-group">
+          <button class="btn btn-success" id="backup-settings">💾 Backup All Settings</button>
+          <button class="btn btn-primary" id="restore-settings">🔄 Restore Settings</button>
+          <button class="btn btn-danger" id="clear-all">🗑️ Clear All Data</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Tab -->
+    <div class="tab-content" id="history">
+      <div class="section">
+        <h2>Copy History</h2>
+        <p>Recent citations you've copied (stored locally)</p>
+        <div class="btn-group" style="margin-bottom: 16px;">
+          <button class="btn btn-secondary" id="clear-history">🗑️ Clear History</button>
+          <button class="btn btn-primary" id="refresh-history">🔄 Refresh</button>
+        </div>
+        <div id="history-list">
+          <div class="alert alert-info">
+            No history available yet. Start copying citations to see them here!
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Tab -->
+    <div class="tab-content" id="stats">
+      <div class="section">
+        <h2>Usage Statistics</h2>
+        <p>Overview of your NotebookLM citation mapping activity</p>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Total Citations Mapped</h3>
+            <div class="stat-value" id="stat-total">0</div>
+          </div>
+          <div class="stat-card" style="background: linear-gradient(135deg, #34a853 0%, #2d9247 100%);">
+            <h3>Times Copied</h3>
+            <div class="stat-value" id="stat-copies">0</div>
+          </div>
+          <div class="stat-card" style="background: linear-gradient(135deg, #fbbc04 0%, #f29900 100%);">
+            <h3>Documents Referenced</h3>
+            <div class="stat-value" id="stat-docs">0</div>
+          </div>
+          <div class="stat-card" style="background: linear-gradient(135deg, #ea4335 0%, #d33426 100%);">
+            <h3>Active Sessions</h3>
+            <div class="stat-value" id="stat-sessions">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Most Referenced Sources</h2>
+        <div id="top-sources">
+          <div class="card">
+            <p style="color: #666; text-align: center;">No data available yet</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <button class="btn btn-danger" id="reset-stats">🔄 Reset Statistics</button>
+      </div>
+    </div>
+
+    <!-- About Tab -->
+    <div class="tab-content" id="about">
+      <div class="section">
+        <h2>About NotebookLM Citation Mapper</h2>
+        <div class="card">
+          <h3>Version 1.0.0</h3>
+          <p>A Chrome extension that preserves citation references when copying chat text from Google NotebookLM.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Features</h2>
+        <ul style="line-height: 2; color: #666;">
+          <li>📚 Automatically maps citations to source documents</li>
+          <li>📄 Copy chat text with citation references preserved</li>
+          <li>🔄 Real-time citation detection and updates</li>
+          <li>💾 Export and import citation mappings</li>
+          <li>⚙️ Customizable formatting options</li>
+          <li>📊 Usage statistics and history tracking</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2>Privacy</h2>
+        <div class="alert alert-success">
+          <strong>✓ Privacy First:</strong> All citation processing happens locally in your browser. No data is sent to external servers.
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Support</h2>
+        <p>Need help or want to report an issue?</p>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="view-readme">📖 View Documentation</button>
+          <button class="btn btn-secondary" id="report-issue">🐛 Report Issue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>

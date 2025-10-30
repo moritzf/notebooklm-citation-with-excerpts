@@ -5,7 +5,8 @@
   "description": "Maps citation numbers to source filenames in Google NotebookLM",
   "permissions": [
     "activeTab",
-    "clipboardWrite"
+    "clipboardWrite",
+    "storage"
   ],
   "host_permissions": [
     "https://notebooklm.google.com/*"
