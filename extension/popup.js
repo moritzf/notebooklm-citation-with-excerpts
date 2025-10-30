@@ -136,33 +136,33 @@ document.addEventListener('DOMContentLoaded', function() {
   // Copy chat text with citations
   copyChatBtn.addEventListener('click', function() {
     if (currentMappings.length === 0) {
-      showError('Keine Citations gefunden. Bitte Rescan durchführen.');
+      showError('No citations found. Please rescan.');
       return;
     }
 
     copyChatBtn.disabled = true;
-    copyChatBtn.textContent = 'Extrahiere Text...';
+    copyChatBtn.textContent = 'Extracting text...';
 
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       chrome.tabs.sendMessage(tabs[0].id, {action: 'getChatText'}, function(response) {
         if (chrome.runtime.lastError || !response) {
-          showError('Fehler beim Extrahieren des Chat-Textes.');
+          showError('Error extracting chat text.');
           copyChatBtn.disabled = false;
-          copyChatBtn.textContent = '📄 Text mit Quellen kopieren';
+          copyChatBtn.textContent = '📄 Copy Text with Sources';
           return;
         }
 
         if (!response.chatText) {
-          showError('Kein Chat-Text gefunden.');
+          showError('No chat text found.');
           copyChatBtn.disabled = false;
-          copyChatBtn.textContent = '📄 Text mit Quellen kopieren';
+          copyChatBtn.textContent = '📄 Copy Text with Sources';
           return;
         }
 
         // Build the full text with citations at the end
         let fullText = response.chatText;
         fullText += '\n\n─────────────────────\n';
-        fullText += 'Quellen:\n';
+        fullText += 'Sources:\n';
 
         // Add citation mappings
         currentMappings.forEach(mapping => {
@@ -178,11 +178,11 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.removeChild(textArea);
 
         // Show feedback
-        copyChatBtn.textContent = '✓ Kopiert!';
+        copyChatBtn.textContent = '✓ Copied!';
         copyChatBtn.style.background = '#188038';
 
         setTimeout(() => {
-          copyChatBtn.textContent = '📄 Text mit Quellen kopieren';
+          copyChatBtn.textContent = '📄 Copy Text with Sources';
           copyChatBtn.style.background = '#34a853';
           copyChatBtn.disabled = false;
         }, 2000);
