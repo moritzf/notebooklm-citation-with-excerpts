@@ -100,6 +100,45 @@ document.addEventListener('DOMContentLoaded', function() {
   // Increment session count on popup open
   incrementSessionCount();
 
+  // Load and apply theme
+  function applyTheme(theme) {
+    if (theme === 'auto') {
+      // Use system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.body.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    } else if (theme === 'dark') {
+      document.body.setAttribute('data-theme', 'dark');
+    } else {
+      document.body.removeAttribute('data-theme');
+    }
+  }
+
+  // Load theme from storage
+  chrome.storage.sync.get(['settings'], (result) => {
+    const settings = result.settings || { theme: 'light' };
+    applyTheme(settings.theme);
+  });
+
+  // Listen for theme changes from settings page
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === 'sync' && changes.settings) {
+      const newSettings = changes.settings.newValue;
+      if (newSettings && newSettings.theme) {
+        applyTheme(newSettings.theme);
+      }
+    }
+  });
+
+  // Listen for system theme changes (for auto mode)
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    chrome.storage.sync.get(['settings'], (result) => {
+      const settings = result.settings || { theme: 'light' };
+      if (settings.theme === 'auto') {
+        document.body.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+      }
+    });
+  });
+
   // Check if we're on NotebookLM
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     const currentTab = tabs[0];

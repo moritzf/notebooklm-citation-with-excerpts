@@ -15,6 +15,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
   let settings = {...defaultSettings};
 
+  // Theme management
+  function applyTheme(theme) {
+    if (theme === 'auto') {
+      // Use system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.body.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    } else if (theme === 'dark') {
+      document.body.setAttribute('data-theme', 'dark');
+    } else {
+      document.body.removeAttribute('data-theme');
+    }
+  }
+
+  // Listen for system theme changes (for auto mode)
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (settings.theme === 'auto') {
+      document.body.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    }
+  });
+
   // Initialize
   loadSettings();
   setupTabs();
@@ -58,6 +78,14 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.theme-option').forEach(o => o.classList.remove('selected'));
         this.classList.add('selected');
         settings.theme = this.getAttribute('data-theme');
+
+        // Apply theme immediately
+        applyTheme(settings.theme);
+
+        // Save to storage
+        chrome.storage.sync.set({settings}, () => {
+          showNotification('Theme updated!', 'success');
+        });
       });
     });
 
@@ -102,6 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
         settings = {...defaultSettings, ...result.settings};
       }
       applySettingsToUI();
+      applyTheme(settings.theme);
     });
   }
 

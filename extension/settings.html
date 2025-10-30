@@ -4,6 +4,59 @@
   <meta charset="utf-8">
   <title>NotebookLM Citation Mapper - Settings</title>
   <style>
+    /* CSS Variables for theming */
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f5f5f5;
+      --bg-tertiary: #f9f9f9;
+      --bg-card: #f0f0f0;
+      --text-primary: #333;
+      --text-secondary: #666;
+      --text-tertiary: #444;
+      --border-color: #ddd;
+      --border-light: #eee;
+      --border-card: #e0e0e0;
+      --accent-blue: #4285f4;
+      --accent-blue-hover: #3367d6;
+      --accent-blue-light: #e8f0fe;
+      --accent-green: #34a853;
+      --accent-green-hover: #2d9247;
+      --accent-green-bg: #d4edda;
+      --accent-green-text: #155724;
+      --accent-green-border: #c3e6cb;
+      --accent-info-bg: #d1ecf1;
+      --accent-info-text: #0c5460;
+      --accent-info-border: #bee5eb;
+      --shadow: 0 2px 8px rgba(0,0,0,0.1);
+      --shadow-hover: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #1e1e1e;
+      --bg-secondary: #121212;
+      --bg-tertiary: #252525;
+      --bg-card: #2d2d2d;
+      --text-primary: #e0e0e0;
+      --text-secondary: #b0b0b0;
+      --text-tertiary: #c0c0c0;
+      --border-color: #404040;
+      --border-light: #333333;
+      --border-card: #383838;
+      --accent-blue: #5a9cff;
+      --accent-blue-hover: #4285f4;
+      --accent-blue-light: #1a3a5c;
+      --accent-green: #4caf50;
+      --accent-green-hover: #45a049;
+      --accent-green-bg: #1b3a1f;
+      --accent-green-text: #a5d6a7;
+      --accent-green-border: #2e5d32;
+      --accent-info-bg: #1a3a3f;
+      --accent-info-text: #81d4fa;
+      --accent-info-border: #26525a;
+      --shadow: 0 2px 8px rgba(0,0,0,0.3);
+      --shadow-hover: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -12,9 +65,10 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: #f5f5f5;
-      color: #333;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
       line-height: 1.6;
+      transition: background-color 0.3s, color 0.3s;
     }
 
     .container {
@@ -24,10 +78,10 @@
     }
 
     header {
-      background: white;
+      background: var(--bg-primary);
       padding: 24px;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: var(--shadow);
       margin-bottom: 24px;
       display: flex;
       justify-content: space-between;
@@ -36,34 +90,35 @@
 
     header h1 {
       font-size: 28px;
-      color: #4285f4;
+      color: var(--accent-blue);
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
     .back-btn {
-      background: #f0f0f0;
+      background: var(--bg-card);
       border: none;
       padding: 10px 20px;
       border-radius: 6px;
       cursor: pointer;
       font-size: 14px;
+      color: var(--text-primary);
       transition: background-color 0.2s;
     }
 
     .back-btn:hover {
-      background: #e0e0e0;
+      background: var(--border-color);
     }
 
     .tabs {
       display: flex;
       gap: 8px;
       margin-bottom: 24px;
-      background: white;
+      background: var(--bg-primary);
       padding: 12px;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: var(--shadow);
     }
 
     .tab {
@@ -74,24 +129,24 @@
       font-size: 15px;
       border-radius: 6px;
       transition: all 0.2s;
-      color: #666;
+      color: var(--text-secondary);
     }
 
     .tab:hover {
-      background: #f0f0f0;
+      background: var(--bg-card);
     }
 
     .tab.active {
-      background: #4285f4;
+      background: var(--accent-blue);
       color: white;
     }
 
     .tab-content {
       display: none;
-      background: white;
+      background: var(--bg-primary);
       padding: 32px;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: var(--shadow);
       min-height: 500px;
     }
 
@@ -106,13 +161,13 @@
     .section h2 {
       font-size: 20px;
       margin-bottom: 16px;
-      color: #333;
-      border-bottom: 2px solid #4285f4;
+      color: var(--text-primary);
+      border-bottom: 2px solid var(--accent-blue);
       padding-bottom: 8px;
     }
 
     .section p {
-      color: #666;
+      color: var(--text-secondary);
       margin-bottom: 16px;
     }
 
@@ -124,7 +179,7 @@
       display: block;
       margin-bottom: 8px;
       font-weight: 500;
-      color: #444;
+      color: var(--text-tertiary);
     }
 
     .form-group input[type="text"],
@@ -132,10 +187,12 @@
     .form-group textarea {
       width: 100%;
       padding: 10px 12px;
-      border: 1px solid #ddd;
+      border: 1px solid var(--border-color);
       border-radius: 6px;
       font-size: 14px;
       font-family: inherit;
+      background: var(--bg-primary);
+      color: var(--text-primary);
     }
 
     .form-group textarea {
@@ -166,30 +223,30 @@
     }
 
     .btn-primary {
-      background: #4285f4;
+      background: var(--accent-blue);
       color: white;
     }
 
     .btn-primary:hover {
-      background: #3367d6;
+      background: var(--accent-blue-hover);
     }
 
     .btn-success {
-      background: #34a853;
+      background: var(--accent-green);
       color: white;
     }
 
     .btn-success:hover {
-      background: #2d9247;
+      background: var(--accent-green-hover);
     }
 
     .btn-secondary {
-      background: #f0f0f0;
-      color: #333;
+      background: var(--bg-card);
+      color: var(--text-primary);
     }
 
     .btn-secondary:hover {
-      background: #e0e0e0;
+      background: var(--border-color);
     }
 
     .btn-danger {
@@ -202,17 +259,17 @@
     }
 
     .card {
-      background: #f9f9f9;
+      background: var(--bg-tertiary);
       padding: 20px;
       border-radius: 6px;
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--border-card);
       margin-bottom: 16px;
     }
 
     .card h3 {
       font-size: 16px;
       margin-bottom: 12px;
-      color: #4285f4;
+      color: var(--accent-blue);
     }
 
     .stats-grid {
@@ -244,21 +301,21 @@
 
     .history-item {
       padding: 12px;
-      border-left: 3px solid #4285f4;
-      background: #f9f9f9;
+      border-left: 3px solid var(--accent-blue);
+      background: var(--bg-tertiary);
       margin-bottom: 12px;
       border-radius: 4px;
     }
 
     .history-item .timestamp {
       font-size: 12px;
-      color: #666;
+      color: var(--text-secondary);
       margin-bottom: 4px;
     }
 
     .history-item .preview {
       font-size: 14px;
-      color: #333;
+      color: var(--text-primary);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -272,20 +329,22 @@
 
     .theme-option {
       padding: 16px 24px;
-      border: 2px solid #ddd;
+      border: 2px solid var(--border-color);
       border-radius: 8px;
       cursor: pointer;
       text-align: center;
       transition: all 0.2s;
+      background: var(--bg-primary);
+      color: var(--text-primary);
     }
 
     .theme-option:hover {
-      border-color: #4285f4;
+      border-color: var(--accent-blue);
     }
 
     .theme-option.selected {
-      border-color: #4285f4;
-      background: #e8f0fe;
+      border-color: var(--accent-blue);
+      background: var(--accent-blue-light);
     }
 
     .alert {
@@ -295,15 +354,15 @@
     }
 
     .alert-success {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
+      background: var(--accent-green-bg);
+      color: var(--accent-green-text);
+      border: 1px solid var(--accent-green-border);
     }
 
     .alert-info {
-      background: #d1ecf1;
-      color: #0c5460;
-      border: 1px solid #bee5eb;
+      background: var(--accent-info-bg);
+      color: var(--accent-info-text);
+      border: 1px solid var(--accent-info-border);
     }
 
     .export-area {
