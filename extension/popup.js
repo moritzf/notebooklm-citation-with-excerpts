@@ -11,6 +11,95 @@ document.addEventListener('DOMContentLoaded', function() {
 
   let currentMappings = [];
 
+  // Storage helper functions
+  function saveToHistory(text, mappings, type) {
+    chrome.storage.local.get(['citationHistory'], (result) => {
+      const history = result.citationHistory || [];
+
+      // Create preview (first 100 characters)
+      const preview = text.substring(0, 100).replace(/\n/g, ' ');
+
+      const historyItem = {
+        timestamp: new Date().toISOString(),
+        preview: preview,
+        count: mappings.length,
+        type: type, // 'chat' or 'mappings'
+        fullText: text,
+        mappings: mappings
+      };
+
+      // Add to beginning of array
+      history.unshift(historyItem);
+
+      // Keep only last 100 entries
+      const trimmedHistory = history.slice(0, 100);
+
+      chrome.storage.local.set({ citationHistory: trimmedHistory });
+    });
+  }
+
+  function updateStatistics(mappings) {
+    chrome.storage.local.get(['statistics'], (result) => {
+      const stats = result.statistics || {
+        totalCitations: 0,
+        totalCopies: 0,
+        uniqueDocs: 0,
+        sessions: 0,
+        topSources: []
+      };
+
+      // Update counts
+      stats.totalCitations += mappings.length;
+      stats.totalCopies += 1;
+
+      // Track unique documents
+      const docSet = new Set();
+      mappings.forEach(m => docSet.add(m.filename));
+
+      // Update top sources
+      const sourceCount = {};
+      mappings.forEach(m => {
+        sourceCount[m.filename] = (sourceCount[m.filename] || 0) + 1;
+      });
+
+      // Merge with existing top sources
+      const existingTopSources = stats.topSources || [];
+      existingTopSources.forEach(source => {
+        sourceCount[source.filename] = (sourceCount[source.filename] || 0) + source.count;
+      });
+
+      // Convert to array and sort
+      stats.topSources = Object.entries(sourceCount).map(([filename, count]) => ({
+        filename,
+        count
+      })).sort((a, b) => b.count - a.count);
+
+      // Update unique docs (all time)
+      const allDocs = new Set(stats.topSources.map(s => s.filename));
+      stats.uniqueDocs = allDocs.size;
+
+      chrome.storage.local.set({ statistics: stats });
+    });
+  }
+
+  function incrementSessionCount() {
+    chrome.storage.local.get(['statistics'], (result) => {
+      const stats = result.statistics || {
+        totalCitations: 0,
+        totalCopies: 0,
+        uniqueDocs: 0,
+        sessions: 0,
+        topSources: []
+      };
+
+      stats.sessions += 1;
+      chrome.storage.local.set({ statistics: stats });
+    });
+  }
+
+  // Increment session count on popup open
+  incrementSessionCount();
+
   // Check if we're on NotebookLM
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     const currentTab = tabs[0];
@@ -99,6 +188,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.execCommand('copy');
     document.body.removeChild(textArea);
 
+    // Save to history and update statistics
+    saveToHistory(text, currentMappings, 'mappings');
+    updateStatistics(currentMappings);
+
     // Show feedback
     const originalText = copyBtn.textContent;
     copyBtn.textContent = 'Copied!';
@@ -177,6 +270,10 @@ document.addEventListener('DOMContentLoaded', function() {
         textArea.select();
         document.execCommand('copy');
         document.body.removeChild(textArea);
+
+        // Save to history and update statistics
+        saveToHistory(fullText, currentMappings, 'chat');
+        updateStatistics(currentMappings);
 
         // Show feedback
         copyChatBtn.textContent = '✓ Copied!';

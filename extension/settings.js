@@ -406,15 +406,108 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       historyList.innerHTML = '';
-      history.reverse().slice(0, 20).forEach(item => {
+      // History is already in reverse order (newest first), take first 50
+      history.slice(0, 50).forEach((item, index) => {
         const historyItem = document.createElement('div');
         historyItem.className = 'history-item';
+
+        // Determine type badge
+        const typeEmoji = item.type === 'chat' ? '💬' : '📋';
+        const typeLabel = item.type === 'chat' ? 'Chat' : 'Mappings';
+
         historyItem.innerHTML = `
-          <div class="timestamp">${new Date(item.timestamp).toLocaleString()}</div>
-          <div class="preview">${item.preview || 'Citation copied'} (${item.count || 0} citations)</div>
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 4px;">
+            <div class="timestamp">${new Date(item.timestamp).toLocaleString()}</div>
+            <div style="background: #e8f0fe; color: #4285f4; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;">
+              ${typeEmoji} ${typeLabel}
+            </div>
+          </div>
+          <div class="preview">${item.preview || 'Citation copied'}</div>
+          <div style="font-size: 12px; color: #666; margin-top: 4px;">
+            ${item.count || 0} citation${item.count !== 1 ? 's' : ''}
+          </div>
         `;
+
+        // Add click to view full text
+        historyItem.style.cursor = 'pointer';
+        historyItem.title = 'Click to view full text';
+        historyItem.addEventListener('click', () => {
+          showHistoryDetail(item);
+        });
+
         historyList.appendChild(historyItem);
       });
+    });
+  }
+
+  // Show history detail in modal/alert
+  function showHistoryDetail(item) {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 20px;
+    `;
+
+    const content = document.createElement('div');
+    content.style.cssText = `
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      max-width: 800px;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+    `;
+
+    content.innerHTML = `
+      <h2 style="margin-top: 0;">History Detail</h2>
+      <div style="margin-bottom: 16px;">
+        <strong>Time:</strong> ${new Date(item.timestamp).toLocaleString()}<br>
+        <strong>Type:</strong> ${item.type === 'chat' ? '💬 Chat' : '📋 Mappings'}<br>
+        <strong>Citations:</strong> ${item.count}
+      </div>
+      <div style="margin-bottom: 16px;">
+        <strong>Full Text:</strong>
+        <pre style="background: #f5f5f5; padding: 12px; border-radius: 4px; white-space: pre-wrap; font-size: 13px; max-height: 400px; overflow-y: auto;">${item.fullText || 'No text available'}</pre>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-primary" id="copy-history-text">📋 Copy Text</button>
+        <button class="btn btn-secondary" id="close-modal">Close</button>
+      </div>
+    `;
+
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+
+    // Close modal
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        document.body.removeChild(modal);
+      }
+    });
+
+    content.querySelector('#close-modal').addEventListener('click', () => {
+      document.body.removeChild(modal);
+    });
+
+    // Copy text
+    content.querySelector('#copy-history-text').addEventListener('click', () => {
+      const textarea = document.createElement('textarea');
+      textarea.value = item.fullText;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showNotification('Text copied from history!', 'success');
     });
   }
 
