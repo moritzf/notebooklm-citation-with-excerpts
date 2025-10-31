@@ -1,0 +1,40 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bar chart background -->
+  <rect x="8" y="8" width="48" height="42" rx="2" fill="none" stroke="#4285f4" stroke-width="2"/>
+
+  <!-- Chart bars -->
+  <g>
+    <!-- Bar 1 -->
+    <rect x="14" y="30" width="8" height="14" rx="1" fill="#34a853"/>
+    <!-- Bar 2 -->
+    <rect x="26" y="22" width="8" height="22" rx="1" fill="#4285f4"/>
+    <!-- Bar 3 -->
+    <rect x="38" y="26" width="8" height="18" rx="1" fill="#ea8600"/>
+  </g>
+
+  <!-- Axis lines -->
+  <line x1="12" y1="46" x2="52" y2="46" stroke="#666" stroke-width="1.5" opacity="0.3"/>
+  <line x1="12" y1="14" x2="12" y2="46" stroke="#666" stroke-width="1.5" opacity="0.3"/>
+
+  <!-- Export/download arrow -->
+  <g transform="translate(44, 42)">
+    <!-- Circle background -->
+    <circle cx="8" cy="10" r="10" fill="white"/>
+    <circle cx="8" cy="10" r="9" fill="#4285f4"/>
+
+    <!-- Down arrow -->
+    <line x1="8" y1="6" x2="8" y2="13" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    <path d="M 5 11 L 8 14 L 11 11" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Base line -->
+    <line x1="5" y1="14" x2="11" y2="14" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Data points on trend line -->
+  <g opacity="0.6">
+    <circle cx="18" cy="36" r="2" fill="#34a853"/>
+    <circle cx="30" cy="28" r="2" fill="#4285f4"/>
+    <circle cx="42" cy="32" r="2" fill="#ea8600"/>
+    <path d="M 18 36 L 30 28 L 42 32" fill="none" stroke="#666" stroke-width="1" stroke-dasharray="2,2"/>
+  </g>
+</svg>
