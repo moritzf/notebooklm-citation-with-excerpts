@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "NotebookLM Citation Mapper",
-  "version": "1.1.0",
-  "description": "Maps citation numbers to source filenames in Google NotebookLM",
+  "version": "1.2.0",
+  "description": "Maps citation numbers to source filenames in Google NotebookLM. Now with Rich Text copy and PDF export!",
   "permissions": [
     "activeTab",
     "clipboardWrite",

@@ -172,7 +172,7 @@
       <img src="settings-icon-24.png" alt="Settings">
     </button>
   </div>
-  <div class="status">
+  <div class="status" aria-live="polite">
     <div id="status-text">Connecting to NotebookLM...</div>
   </div>
   <div class="mappings" id="mappings-container">
@@ -180,10 +180,13 @@
   </div>
   <div class="buttons">
     <button class="success" id="copy-chat-btn">📄 Copy Text with Sources</button>
+    <button class="primary" id="copy-rich-btn">📝 Copy Rich Text</button>
+    <button class="primary" id="export-pdf-btn">📑 Export PDF</button>
     <button class="primary" id="copy-btn">📋 Copy Citation Mappings</button>
     <button class="secondary" id="rescan-btn">🔄 Rescan Page</button>
   </div>
-  <div class="error" id="error-message" style="display: none;"></div>
+  <div class="error" id="error-message" style="display: none;" role="alert" aria-live="assertive"></div>
+  <script src="lib/jspdf.umd.min.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

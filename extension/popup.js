@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const mappingsContainer = document.getElementById('mappings-container');
   const copyBtn = document.getElementById('copy-btn');
   const copyChatBtn = document.getElementById('copy-chat-btn');
+  const copyRichBtn = document.getElementById('copy-rich-btn');
+  const exportPdfBtn = document.getElementById('export-pdf-btn');
   const rescanBtn = document.getElementById('rescan-btn');
   const settingsBtn = document.getElementById('settings-btn');
   const errorMessage = document.getElementById('error-message');
@@ -141,14 +143,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Check if we're on NotebookLM
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    if (!tabs || tabs.length === 0) {
+      statusText.textContent = 'No active tab found';
+      statusText.style.color = '#d93025';
+      return;
+    }
+
     const currentTab = tabs[0];
 
-    if (!currentTab.url.includes('notebooklm.google.com')) {
+    // Secure URL validation
+    let isNotebookLM = false;
+    try {
+      const url = new URL(currentTab.url);
+      isNotebookLM = url.hostname === 'notebooklm.google.com';
+    } catch (e) {
+      isNotebookLM = false;
+    }
+
+    if (!isNotebookLM) {
       statusText.textContent = 'Please open Google NotebookLM';
       statusText.style.color = '#d93025';
       mappingsContainer.innerHTML = '<div class="loading">This extension only works on notebooklm.google.com</div>';
       copyBtn.disabled = true;
       copyChatBtn.disabled = true;
+      copyRichBtn.disabled = true;
+      exportPdfBtn.disabled = true;
       rescanBtn.disabled = true;
       return;
     }
@@ -160,6 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load mappings from content script
   function loadMappings() {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      if (!tabs || tabs.length === 0) return;
       chrome.tabs.sendMessage(tabs[0].id, {action: 'getMappings'}, function(response) {
         if (chrome.runtime.lastError) {
           statusText.textContent = 'Error connecting to page';
@@ -183,6 +203,8 @@ document.addEventListener('DOMContentLoaded', function() {
       statusText.style.color = '#ea8600';
       mappingsContainer.innerHTML = '<div class="loading">No citations detected on the page yet.</div>';
       copyBtn.disabled = true;
+      copyRichBtn.disabled = true;
+      exportPdfBtn.disabled = true;
       return;
     }
 
@@ -197,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
     mappings.forEach(mapping => {
       html += `
         <div class="mapping-item">
-          <span class="citation-num">Citation ${mapping.citation}</span> → 
+          <span class="citation-num">Citation ${mapping.citation}</span> →
           ${mapping.filename}
         </div>
       `;
@@ -206,6 +228,8 @@ document.addEventListener('DOMContentLoaded', function() {
     mappingsContainer.innerHTML = html;
     copyBtn.disabled = false;
     copyChatBtn.disabled = false;
+    copyRichBtn.disabled = false;
+    exportPdfBtn.disabled = false;
   }
 
   // Copy mappings to clipboard
@@ -248,6 +272,12 @@ document.addEventListener('DOMContentLoaded', function() {
     rescanBtn.textContent = 'Rescanning...';
 
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      if (!tabs || tabs.length === 0) {
+        showError('No active tab found.');
+        rescanBtn.disabled = false;
+        rescanBtn.textContent = 'Rescan Page';
+        return;
+      }
       chrome.tabs.sendMessage(tabs[0].id, {action: 'rescan'}, function(response) {
         if (chrome.runtime.lastError) {
           showError('Failed to rescan. Please refresh the page.');
@@ -277,6 +307,12 @@ document.addEventListener('DOMContentLoaded', function() {
     copyChatBtn.textContent = 'Extracting text...';
 
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      if (!tabs || tabs.length === 0) {
+        showError('No active tab found.');
+        copyChatBtn.disabled = false;
+        copyChatBtn.textContent = '📄 Copy Text with Sources';
+        return;
+      }
       chrome.tabs.sendMessage(tabs[0].id, {action: 'getChatText'}, function(response) {
         if (chrome.runtime.lastError || !response) {
           showError('Error extracting chat text.');
@@ -340,5 +376,247 @@ document.addEventListener('DOMContentLoaded', function() {
   // Open settings page
   settingsBtn.addEventListener('click', function() {
     chrome.tabs.create({ url: 'settings.html' });
+  });
+
+  // Generate Rich HTML from text and mappings
+  function generateRichHTML(text, mappings) {
+    // Escape HTML entities
+    let htmlText = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // Replace citation markers [N] with bold styled versions
+    htmlText = htmlText.replace(/\[(\d+)\]/g, '<strong style="color: #4285f4;">[$1]</strong>');
+
+    // Replace newlines with <br> for proper line breaks
+    htmlText = htmlText.replace(/\n/g, '<br>');
+
+    // Build sources HTML
+    let sourcesHTML = '<hr style="border: none; border-top: 1px solid #ccc; margin: 16px 0;">';
+    sourcesHTML += '<p style="font-weight: bold; margin-bottom: 8px;">Sources:</p>';
+    sourcesHTML += '<ul style="margin: 0; padding-left: 20px;">';
+
+    mappings.forEach(mapping => {
+      sourcesHTML += `<li><strong style="color: #4285f4;">[${mapping.citation}]</strong> ${mapping.filename}</li>`;
+    });
+
+    sourcesHTML += '</ul>';
+
+    return `<div style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6;">${htmlText}${sourcesHTML}</div>`;
+  }
+
+  // Copy Rich Text (HTML) to clipboard
+  copyRichBtn.addEventListener('click', function() {
+    if (currentMappings.length === 0) {
+      showError('No citations found. Please rescan.');
+      return;
+    }
+
+    copyRichBtn.disabled = true;
+    copyRichBtn.textContent = 'Extracting text...';
+
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      if (!tabs || tabs.length === 0) {
+        showError('No active tab found.');
+        copyRichBtn.disabled = false;
+        copyRichBtn.textContent = '📝 Copy Rich Text';
+        return;
+      }
+      chrome.tabs.sendMessage(tabs[0].id, {action: 'getChatText'}, async function(response) {
+        if (chrome.runtime.lastError || !response) {
+          showError('Error extracting chat text.');
+          copyRichBtn.disabled = false;
+          copyRichBtn.textContent = '📝 Copy Rich Text';
+          return;
+        }
+
+        if (!response.chatText) {
+          showError('No chat text found.');
+          copyRichBtn.disabled = false;
+          copyRichBtn.textContent = '📝 Copy Rich Text';
+          return;
+        }
+
+        // Build plain text version
+        let plainText = response.chatText;
+        plainText += '\n\n─────────────────────\n';
+        plainText += 'Sources:\n';
+        currentMappings.forEach(mapping => {
+          plainText += `[${mapping.citation}] → ${mapping.filename}\n`;
+        });
+
+        // Generate rich HTML
+        const richHTML = generateRichHTML(response.chatText, currentMappings);
+
+        try {
+          // Use Clipboard API to copy both HTML and plain text
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              'text/html': new Blob([richHTML], {type: 'text/html'}),
+              'text/plain': new Blob([plainText], {type: 'text/plain'})
+            })
+          ]);
+
+          // Save to history and update statistics
+          saveToHistory(plainText, currentMappings, 'rich');
+          updateStatistics(currentMappings);
+
+          // Show feedback
+          copyRichBtn.textContent = '✓ Copied!';
+          copyRichBtn.style.background = '#188038';
+
+          setTimeout(() => {
+            copyRichBtn.textContent = '📝 Copy Rich Text';
+            copyRichBtn.style.background = '#4285f4';
+            copyRichBtn.disabled = false;
+          }, 2000);
+
+        } catch (err) {
+          showError('Failed to copy rich text. Try plain copy instead.');
+          copyRichBtn.disabled = false;
+          copyRichBtn.textContent = '📝 Copy Rich Text';
+        }
+      });
+    });
+  });
+
+  // Export PDF
+  exportPdfBtn.addEventListener('click', function() {
+    if (currentMappings.length === 0) {
+      showError('No citations found. Please rescan.');
+      return;
+    }
+
+    exportPdfBtn.disabled = true;
+    exportPdfBtn.textContent = 'Generating PDF...';
+
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      if (!tabs || tabs.length === 0) {
+        showError('No active tab found.');
+        exportPdfBtn.disabled = false;
+        exportPdfBtn.textContent = '📑 Export PDF';
+        return;
+      }
+      chrome.tabs.sendMessage(tabs[0].id, {action: 'getChatText'}, function(response) {
+        if (chrome.runtime.lastError || !response) {
+          showError('Error extracting chat text.');
+          exportPdfBtn.disabled = false;
+          exportPdfBtn.textContent = '📑 Export PDF';
+          return;
+        }
+
+        if (!response.chatText) {
+          showError('No chat text found.');
+          exportPdfBtn.disabled = false;
+          exportPdfBtn.textContent = '📑 Export PDF';
+          return;
+        }
+
+        try {
+          // Check if jsPDF is loaded
+          if (!window.jspdf || !window.jspdf.jsPDF) {
+            showError('PDF library failed to load. Please try again.');
+            exportPdfBtn.disabled = false;
+            exportPdfBtn.textContent = '📑 Export PDF';
+            return;
+          }
+
+          // Create PDF using jsPDF
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+
+          // Title
+          doc.setFontSize(18);
+          doc.setFont(undefined, 'bold');
+          doc.text('NotebookLM Export', 20, 20);
+
+          // Date
+          doc.setFontSize(10);
+          doc.setFont(undefined, 'normal');
+          doc.setTextColor(100);
+          doc.text(new Date().toLocaleString(), 20, 28);
+
+          // Reset text color
+          doc.setTextColor(0);
+
+          // Main content
+          doc.setFontSize(11);
+          const pageWidth = doc.internal.pageSize.getWidth();
+          const margin = 20;
+          const maxWidth = pageWidth - (margin * 2);
+
+          // Split text to fit page width
+          const lines = doc.splitTextToSize(response.chatText, maxWidth);
+
+          let yPosition = 40;
+          const lineHeight = 6;
+          const pageHeight = doc.internal.pageSize.getHeight();
+
+          lines.forEach(line => {
+            if (yPosition > pageHeight - 30) {
+              doc.addPage();
+              yPosition = 20;
+            }
+            doc.text(line, margin, yPosition);
+            yPosition += lineHeight;
+          });
+
+          // Add separator
+          yPosition += 10;
+          if (yPosition > pageHeight - 50) {
+            doc.addPage();
+            yPosition = 20;
+          }
+
+          doc.setDrawColor(200);
+          doc.line(margin, yPosition, pageWidth - margin, yPosition);
+          yPosition += 10;
+
+          // Sources header
+          doc.setFontSize(14);
+          doc.setFont(undefined, 'bold');
+          doc.text('Sources', margin, yPosition);
+          yPosition += 10;
+
+          // Sources list
+          doc.setFontSize(10);
+          doc.setFont(undefined, 'normal');
+
+          currentMappings.forEach(mapping => {
+            if (yPosition > pageHeight - 20) {
+              doc.addPage();
+              yPosition = 20;
+            }
+            doc.text(`[${mapping.citation}]  ${mapping.filename}`, margin, yPosition);
+            yPosition += 7;
+          });
+
+          // Save the PDF
+          const timestamp = new Date().toISOString().slice(0, 10);
+          doc.save(`notebooklm-export-${timestamp}.pdf`);
+
+          // Save to history and update statistics
+          saveToHistory(response.chatText, currentMappings, 'pdf');
+          updateStatistics(currentMappings);
+
+          // Show feedback
+          exportPdfBtn.textContent = '✓ Downloaded!';
+          exportPdfBtn.style.background = '#188038';
+
+          setTimeout(() => {
+            exportPdfBtn.textContent = '📑 Export PDF';
+            exportPdfBtn.style.background = '#4285f4';
+            exportPdfBtn.disabled = false;
+          }, 2000);
+
+        } catch (err) {
+          console.error('PDF export error:', err);
+          showError('Failed to generate PDF. Please try again.');
+          exportPdfBtn.disabled = false;
+          exportPdfBtn.textContent = '📑 Export PDF';
+        }
+      });
+    });
   });
 });
