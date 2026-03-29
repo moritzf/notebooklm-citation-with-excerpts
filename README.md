@@ -1,21 +1,26 @@
 # NotebookLM Citation Mapper
 
-A Chrome extension that automatically maps citation numbers to source filenames in Google NotebookLM and allows you to copy chat text with preserved citations.
+A Chrome extension for Google NotebookLM that maps citation numbers to source files, extracts answer text with inline citations, captures citation snippets, and exports the result in multiple formats.
 
 ## Features
 
-- **Automatic Citation Mapping**: Scans NotebookLM pages and creates a mapping between citation numbers and source documents
-- **Copy Chat with Citations**: Extract the full chat text with citation numbers preserved as `[1]`, `[2]`, etc., with a complete source legend appended
-- **Citation Mapping Export**: Copy just the citation mappings to clipboard
-- **Smart Page Scanning**: Automatically detects new citations as they appear
-- **Manual Rescan**: Refresh the citation mappings on demand
+- **Automatic Citation Mapping**: Detects NotebookLM citation markers and maps them to source filenames
+- **Snippet Extraction**: Captures citation snippets from the NotebookLM citation hover cards when available
+- **Copy Text with Sources**: Copies the extracted NotebookLM answer text with inline `[1]`, `[2]` style citations plus a source legend
+- **Copy Text for Word**: Replaces numeric citations with inline source labels like `{SourceName.pdf}` for easier Word workflows
+- **Copy Rich Text**: Copies both HTML and plain text so formatted output pastes cleanly into rich editors
+- **PDF Export**: Generates a downloadable PDF containing the extracted answer text and source list
+- **Citation Mapping Export**: Copies only the citation legend to the clipboard
+- **History and Statistics**: Stores recent exports locally and tracks aggregate usage statistics
+- **Customizable Formatting**: Includes a settings page for theme, citation formatting, separator text, and source header preferences
+- **Smart Page Scanning**: Watches dynamic NotebookLM updates and supports manual rescans
 
 ## Installation
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/nicremo/notebookLM-citation.git
-   cd notebookLM-citation
+   git clone https://github.com/moritzf/notebooklm-citation-with-excerpts.git
+   cd notebooklm-citation-with-excerpts
    ```
 
 2. Open Chrome and navigate to `chrome://extensions/`
@@ -29,28 +34,41 @@ A Chrome extension that automatically maps citation numbers to source filenames 
 1. Navigate to [notebooklm.google.com](https://notebooklm.google.com)
 
 2. The extension will automatically:
-   - Scan for citations in the current notebook
-   - Update citations as new content loads
+   - Scan the current NotebookLM page for citations
+   - Resolve citation numbers to source names
+   - Enrich mappings with source snippets when NotebookLM exposes them
+   - Update mappings as the page changes
 
 3. Click the extension icon in Chrome to see:
    - **Citation Mappings**: List of all detected citations
-   - **📄 Text mit Quellen kopieren**: Copies the entire chat text with citations preserved
-   - **📋 Citation Mappings kopieren**: Copies just the citation legend
+   - **📄 Copy Text with Sources**: Copies the extracted answer text with inline citations and appended sources
+   - **📋 Copy Text for Word**: Converts `[1]` style citations into `{Filename}` references for Word-based editing
+   - **📝 Copy Rich Text**: Copies formatted HTML plus plain text fallback
+   - **📑 Export PDF**: Downloads a PDF export of the answer and source list
+   - **📋 Copy Citation Mappings**: Copies just the citation legend
    - **🔄 Rescan Page**: Manually refresh the citation mappings
+   - **Settings**: Opens a full settings page with format, theme, history, import/export, and statistics tabs
 
 ### Copy Format
 
-When you click "Text mit Quellen kopieren", the extension copies:
+When you click "Copy Text with Sources", the extension copies:
 
 ```
 [Your chat text with citations preserved as [1], [2], etc.]
 
-─────────────────────
-Quellen:
+---
+Sources:
 [1] → Document1.pdf
+[1] → "Relevant excerpt from the source"
 [2] → Research_Paper.docx
 [3] → Notes.txt
 ...
+```
+
+When you click "Copy Text for Word", the extension converts inline citations into source-tag style references:
+
+```text
+The report identifies three major findings {Research_Paper.docx} and a follow-up recommendation {Notes.txt}.
 ```
 
 ## How It Works
@@ -63,16 +81,21 @@ The extension uses three main components:
 
 ### Technical Details
 
-- Built for **Manifest V3** (latest Chrome Extension API)
-- Uses **MutationObserver** to detect dynamic content changes
-- Automatically expands hidden citation lists (`...` buttons)
-- Smart fallback mechanisms for text extraction
+- Built for **Manifest V3**
+- Uses **MutationObserver** to detect dynamic NotebookLM content changes
+- Extracts response text directly from NotebookLM answer containers
+- Replaces live citation buttons with stable inline citation markers during export
+- Attempts to harvest source snippets from NotebookLM citation tooltips
+- Uses **jsPDF** for PDF generation inside the extension popup
+- Stores settings in `chrome.storage.sync` and export history/statistics in `chrome.storage.local`
 
 ## Known Limitations
 
-- The citation mapping relies on NotebookLM's DOM structure and `aria-label` attributes
-- May break if Google significantly changes NotebookLM's interface
-- Chat text extraction uses heuristics and may occasionally miss content
+- The citation mapping relies on NotebookLM's DOM structure, labels, and tooltip behavior
+- Snippet extraction depends on NotebookLM rendering citation hover cards in a detectable way
+- PDF export uses plain text layout rather than a pixel-perfect NotebookLM rendering
+- Chat extraction still uses heuristics and may occasionally miss or reorder some content
+- The extension may break if Google substantially changes the NotebookLM UI
 
 ## Contributing
 
