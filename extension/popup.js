@@ -1,10 +1,12 @@
 // popup.js - Popup script for NotebookLM Citation Mapper
 
 document.addEventListener('DOMContentLoaded', function() {
+  const SOURCE_SEPARATOR = '---';
   const statusText = document.getElementById('status-text');
   const mappingsContainer = document.getElementById('mappings-container');
   const copyBtn = document.getElementById('copy-btn');
   const copyChatBtn = document.getElementById('copy-chat-btn');
+  const copyWordBtn = document.getElementById('copy-word-btn');
   const copyRichBtn = document.getElementById('copy-rich-btn');
   const exportPdfBtn = document.getElementById('export-pdf-btn');
   const rescanBtn = document.getElementById('rescan-btn');
@@ -12,6 +14,58 @@ document.addEventListener('DOMContentLoaded', function() {
   const errorMessage = document.getElementById('error-message');
 
   let currentMappings = [];
+
+  function hasSnippet(mapping) {
+    return Boolean(mapping && typeof mapping.snippet === 'string' && mapping.snippet.trim().length > 0);
+  }
+
+  function formatSourcePlain(mapping, includeSnippet = true) {
+    let line = `[${mapping.citation}] -> ${mapping.filename}`;
+    if (includeSnippet && hasSnippet(mapping)) {
+      line += `\n    "${mapping.snippet.trim()}"`;
+    }
+    return line;
+  }
+
+  function escapeHtml(text) {
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function formatSourceHTML(mapping) {
+    const snippetHTML = hasSnippet(mapping)
+      ? `<div style="margin-top: 4px; color: #666; font-style: italic;">"${escapeHtml(mapping.snippet.trim())}"</div>`
+      : '';
+    return `<li><strong style="color: #4285f4;">[${mapping.citation}]</strong> ${escapeHtml(mapping.filename)}${snippetHTML}</li>`;
+  }
+
+  function copyPlainTextToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+  }
+
+  function formatWordCitation(mapping, citationNumber) {
+    const filename = mapping && mapping.filename ? mapping.filename : `Source ${citationNumber}`;
+    return `{${String(filename).trim()}}`;
+  }
+
+  function buildWordPlainText(chatText, mappings) {
+    const mappingsByCitation = new Map(
+      mappings.map(mapping => [String(mapping.citation), mapping])
+    );
+
+    return chatText
+      .replace(/\[(\d+)\]/g, (match, citationNumber) => {
+        return formatWordCitation(mappingsByCitation.get(citationNumber), citationNumber);
+      })
+      .replace(/([^\s([{])\{/g, '$1 {');
+  }
 
   // Storage helper functions
   function saveToHistory(text, mappings, type) {
@@ -166,6 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
       mappingsContainer.innerHTML = '<div class="loading">This extension only works on notebooklm.google.com</div>';
       copyBtn.disabled = true;
       copyChatBtn.disabled = true;
+      copyWordBtn.disabled = true;
       copyRichBtn.disabled = true;
       exportPdfBtn.disabled = true;
       rescanBtn.disabled = true;
@@ -180,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function loadMappings() {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       if (!tabs || tabs.length === 0) return;
-      chrome.tabs.sendMessage(tabs[0].id, {action: 'getMappings'}, function(response) {
+      chrome.tabs.sendMessage(tabs[0].id, {action: 'getMappings', includeSnippets: true}, function(response) {
         if (chrome.runtime.lastError) {
           statusText.textContent = 'Error connecting to page';
           statusText.style.color = '#d93025';
@@ -203,6 +258,8 @@ document.addEventListener('DOMContentLoaded', function() {
       statusText.style.color = '#ea8600';
       mappingsContainer.innerHTML = '<div class="loading">No citations detected on the page yet.</div>';
       copyBtn.disabled = true;
+      copyChatBtn.disabled = true;
+      copyWordBtn.disabled = true;
       copyRichBtn.disabled = true;
       exportPdfBtn.disabled = true;
       return;
@@ -217,10 +274,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Build HTML
     let html = '';
     mappings.forEach(mapping => {
+      const snippetHtml = hasSnippet(mapping)
+        ? `<div class="mapping-snippet">"${escapeHtml(mapping.snippet.trim())}"</div>`
+        : '';
       html += `
         <div class="mapping-item">
-          <span class="citation-num">Citation ${mapping.citation}</span> →
-          ${mapping.filename}
+          <span class="citation-num">Citation ${mapping.citation}</span> ->
+          ${escapeHtml(mapping.filename)}
+          ${snippetHtml}
         </div>
       `;
     });
@@ -228,6 +289,7 @@ document.addEventListener('DOMContentLoaded', function() {
     mappingsContainer.innerHTML = html;
     copyBtn.disabled = false;
     copyChatBtn.disabled = false;
+    copyWordBtn.disabled = false;
     copyRichBtn.disabled = false;
     exportPdfBtn.disabled = false;
   }
@@ -240,16 +302,11 @@ document.addEventListener('DOMContentLoaded', function() {
     text += '===========================\n\n';
 
     currentMappings.forEach(mapping => {
-      text += `Citation ${mapping.citation} → ${mapping.filename}\n`;
+      text += `${formatSourcePlain(mapping)}\n`;
     });
 
     // Use Chrome API to copy to clipboard
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    document.body.appendChild(textArea);
-    textArea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textArea);
+    copyPlainTextToClipboard(text);
 
     // Save to history and update statistics
     saveToHistory(text, currentMappings, 'mappings');
@@ -330,21 +387,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Build the full text with citations at the end
         let fullText = response.chatText;
-        fullText += '\n\n─────────────────────\n';
+        fullText += `\n\n${SOURCE_SEPARATOR}\n`;
         fullText += 'Sources:\n';
 
         // Add citation mappings
         currentMappings.forEach(mapping => {
-          fullText += `[${mapping.citation}] → ${mapping.filename}\n`;
+          fullText += `${formatSourcePlain(mapping)}\n`;
         });
 
         // Copy to clipboard
-        const textArea = document.createElement('textarea');
-        textArea.value = fullText;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
+        copyPlainTextToClipboard(fullText);
 
         // Save to history and update statistics
         saveToHistory(fullText, currentMappings, 'chat');
@@ -358,6 +410,57 @@ document.addEventListener('DOMContentLoaded', function() {
           copyChatBtn.textContent = '📄 Copy Text with Sources';
           copyChatBtn.style.background = '#34a853';
           copyChatBtn.disabled = false;
+        }, 2000);
+      });
+    });
+  });
+
+  // Copy plain text for Word with inline author-year citations only
+  copyWordBtn.addEventListener('click', function() {
+    if (currentMappings.length === 0) {
+      showError('No citations found. Please rescan.');
+      return;
+    }
+
+    copyWordBtn.disabled = true;
+    copyWordBtn.textContent = 'Extracting text...';
+
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      if (!tabs || tabs.length === 0) {
+        showError('No active tab found.');
+        copyWordBtn.disabled = false;
+        copyWordBtn.textContent = '📋 Copy Text for Word';
+        return;
+      }
+
+      chrome.tabs.sendMessage(tabs[0].id, {action: 'getChatText'}, function(response) {
+        if (chrome.runtime.lastError || !response) {
+          showError('Error extracting chat text.');
+          copyWordBtn.disabled = false;
+          copyWordBtn.textContent = '📋 Copy Text for Word';
+          return;
+        }
+
+        if (!response.chatText) {
+          showError('No chat text found.');
+          copyWordBtn.disabled = false;
+          copyWordBtn.textContent = '📋 Copy Text for Word';
+          return;
+        }
+
+        const wordText = buildWordPlainText(response.chatText, currentMappings);
+        copyPlainTextToClipboard(wordText);
+
+        saveToHistory(wordText, currentMappings, 'word');
+        updateStatistics(currentMappings);
+
+        copyWordBtn.textContent = '✓ Copied!';
+        copyWordBtn.style.background = '#188038';
+
+        setTimeout(() => {
+          copyWordBtn.textContent = '📋 Copy Text for Word';
+          copyWordBtn.style.background = '#4285f4';
+          copyWordBtn.disabled = false;
         }, 2000);
       });
     });
@@ -381,10 +484,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Generate Rich HTML from text and mappings
   function generateRichHTML(text, mappings) {
     // Escape HTML entities
-    let htmlText = text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+    let htmlText = escapeHtml(text);
 
     // Replace citation markers [N] with bold styled versions
     htmlText = htmlText.replace(/\[(\d+)\]/g, '<strong style="color: #4285f4;">[$1]</strong>');
@@ -398,7 +498,7 @@ document.addEventListener('DOMContentLoaded', function() {
     sourcesHTML += '<ul style="margin: 0; padding-left: 20px;">';
 
     mappings.forEach(mapping => {
-      sourcesHTML += `<li><strong style="color: #4285f4;">[${mapping.citation}]</strong> ${mapping.filename}</li>`;
+      sourcesHTML += formatSourceHTML(mapping);
     });
 
     sourcesHTML += '</ul>';
@@ -440,10 +540,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Build plain text version
         let plainText = response.chatText;
-        plainText += '\n\n─────────────────────\n';
+        plainText += `\n\n${SOURCE_SEPARATOR}\n`;
         plainText += 'Sources:\n';
         currentMappings.forEach(mapping => {
-          plainText += `[${mapping.citation}] → ${mapping.filename}\n`;
+          plainText += `${formatSourcePlain(mapping)}\n`;
         });
 
         // Generate rich HTML
@@ -588,8 +688,34 @@ document.addEventListener('DOMContentLoaded', function() {
               doc.addPage();
               yPosition = 20;
             }
-            doc.text(`[${mapping.citation}]  ${mapping.filename}`, margin, yPosition);
-            yPosition += 7;
+            const sourceLine = `[${mapping.citation}] ${mapping.filename}`;
+            const sourceLines = doc.splitTextToSize(sourceLine, maxWidth);
+            sourceLines.forEach(line => {
+              if (yPosition > pageHeight - 20) {
+                doc.addPage();
+                yPosition = 20;
+              }
+              doc.text(line, margin, yPosition);
+              yPosition += 7;
+            });
+
+            if (hasSnippet(mapping)) {
+              doc.setTextColor(90);
+              doc.setFont(undefined, 'italic');
+              const snippetLines = doc.splitTextToSize(`"${mapping.snippet.trim()}"`, maxWidth - 6);
+              snippetLines.forEach(line => {
+                if (yPosition > pageHeight - 20) {
+                  doc.addPage();
+                  yPosition = 20;
+                }
+                doc.text(line, margin + 6, yPosition);
+                yPosition += 6;
+              });
+              doc.setTextColor(0);
+              doc.setFont(undefined, 'normal');
+            }
+
+            yPosition += 2;
           });
 
           // Save the PDF
