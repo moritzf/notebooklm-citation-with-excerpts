@@ -78,11 +78,10 @@ The report identifies three major findings {Research_Paper.docx} and a follow-up
 
 ## How It Works
 
-The extension uses three main components:
+The extension uses two main components:
 
 - **content.js**: Scans the page for citation markers (using `aria-label` attributes) and extracts chat text
 - **popup.js**: Provides the popup interface when clicking the extension icon
-- **background.js**: Handles context menu integration and background tasks
 
 ### Technical Details
 

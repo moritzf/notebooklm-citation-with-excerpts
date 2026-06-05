@@ -10,8 +10,7 @@ When you copy text from NotebookLM's chat interface, the citation numbers (like 
 
 - **Automatic Citation Mapping**: Automatically detects and maps citation numbers to source document names
 - **Copy with Sources**: Copy chat text with citation sources appended at the bottom
-- **Draggable Legend Window**: Shows a real-time citation map directly on the NotebookLM page
-- **Smart Citation Expansion**: Automatically expands hidden citation lists to capture all sources
+- **Citation Expansion**: Expands visible citation overflow controls before scanning
 - **Popup Interface**: Quick access to citation mappings and controls
 - **Auto-Rescan**: Monitors page changes and updates mappings automatically
 - **Customizable Formatting**: Configure how citations and sources appear in copied text
@@ -49,14 +48,6 @@ When you copy text from NotebookLM's chat interface, the citation numbers (like 
 - Always review copied output before using it. The scanning process can occasionally miss excerpts.
 - For best results, start a new NotebookLM chat (or clear prior chat history) before generating a fresh answer and running the extension.
 
-### Legend Window
-
-- A draggable window appears on the page showing the citation map
-- Click and drag to reposition it
-- Minimize/maximize using the controls
-- Resize by dragging the corners
-- Copy the entire mapping with one click
-
 ### Settings Page
 
 Access advanced features through the settings icon:
@@ -77,7 +68,6 @@ All citation processing happens locally in your browser. No data is sent to exte
 - **Manifest Version**: 3
 - **Permissions**: activeTab, clipboardWrite, storage
 - **Host Permissions**: https://notebooklm.google.com/*
-- **Background**: Service worker for state management
 - **Content Scripts**: Injected at document_idle
 
 ## Support
