@@ -108,10 +108,6 @@ document.addEventListener('DOMContentLoaded', function() {
       stats.totalCitations += mappings.length;
       stats.totalCopies += 1;
 
-      // Track unique documents
-      const docSet = new Set();
-      mappings.forEach(m => docSet.add(m.filename));
-
       // Update top sources
       const sourceCount = {};
       mappings.forEach(m => {

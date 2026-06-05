@@ -389,10 +389,10 @@
         return Array.from(m.addedNodes).some(n => n.nodeType === 1);
       });
       if (!shouldRun) return;
-      if (window.__notebooklmCitationLegendTimeout) {
-        clearTimeout(window.__notebooklmCitationLegendTimeout);
+      if (window.__notebooklmCitationMapTimeout) {
+        clearTimeout(window.__notebooklmCitationMapTimeout);
       }
-      window.__notebooklmCitationLegendTimeout = setTimeout(() => {
+      window.__notebooklmCitationMapTimeout = setTimeout(() => {
         if (!isMapping) {
           mapCitations();
         }
@@ -549,7 +549,7 @@
         return true;
       }
       sendResponse({ mappings: currentMappings });
-    } else if (request.action === 'rescan' || request.action === 'showMappings') {
+    } else if (request.action === 'rescan') {
       mapCitations({ extractSnippets: true }).then(() => {
         sendResponse({ mappings: currentMappings });
       });
