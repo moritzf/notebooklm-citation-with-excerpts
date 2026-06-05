@@ -44,6 +44,11 @@ When you copy text from NotebookLM's chat interface, the citation numbers (like 
 3. Click the extension icon to see current citation mappings
 4. Copy text from the chat - citations will be automatically included
 
+### Important Caveat
+
+- Always review copied output before using it. The scanning process can occasionally miss excerpts.
+- For best results, start a new NotebookLM chat (or clear prior chat history) before generating a fresh answer and running the extension.
+
 ### Legend Window
 
 - A draggable window appears on the page showing the citation map

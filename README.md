@@ -49,6 +49,11 @@ A Chrome extension for Google NotebookLM that maps citation numbers to source fi
    - **🔄 Rescan Page**: Manually refresh the citation mappings
    - **Settings**: Opens a full settings page with format, theme, history, import/export, and statistics tabs
 
+### Important Caveat
+
+- Always review copied/exported output before using it. The scanning process can occasionally miss excerpts.
+- For best results, start a new NotebookLM chat (or clear prior chat history) before generating a fresh answer and running the extension.
+
 ### Copy Format
 
 When you click "Copy Text with Sources", the extension copies:
