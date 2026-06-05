@@ -1,4 +1,4 @@
-# NotebookLM Citation Mapper
+# NotebookLM Citation Mapper (Fork)
 
 A Chrome extension for Google NotebookLM that maps citation numbers to source files, extracts answer text with inline citations, captures citation snippets, and exports the result in multiple formats.
 
